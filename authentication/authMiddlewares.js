@@ -1,5 +1,6 @@
 var jwt = require("jsonwebtoken");
-const user = require("../db/schema/user.js");
+const { user } = require("../db/schema/user.js");
+const { MemoNote } = require("../db/schema/memo_note.js");
 const authorizeUser = (req, res, next) => {
   const { token } = req.headers;
   if (token) {
@@ -18,18 +19,17 @@ const authorizeUser = (req, res, next) => {
 const loginUser = async function (req, res, next) {
   try {
     const { username, password } = req.headers;
-    const doc = await user.findOne({ username: "username" }).exec();
+    const doc = await user.findOne({ username: username }).exec();
     if (doc) {
-      if (doc.password == this.password) {
-        req.user = doc;
+      if (doc.password == password) {
         var token = jwt.sign({ foo: "bar" }, process.env.JWTSECRETKEY);
         req.token = token;
         next();
       } else {
-        req.status(401).json({ error: "InCorrect Password" });
+        res.status(401).json({ error: "InCorrect Password" });
       }
     } else {
-      req.status(401).json({ error: "User Not Found" });
+      res.status(401).json({ error: "User Not Found" });
     }
   } catch (error) {
     next(error);
@@ -41,14 +41,25 @@ const signUpUser = async function (req, res, next) {
     const { username, password } = req.headers;
     const doc = await user.findOne({ username: "username" }).exec();
     if (!doc) {
-      user.insertOne({ username: username, password: password });
-      req.user = { username, password };
+      const newUser = new user({
+        username: username,
+        password: password,
+      });
+
+      const memoNote1 = new MemoNote({ title: "Go To Gym" });
+      const memoNote2 = new MemoNote({ title: "Crazy Study" });
+      const memoNote3 = new MemoNote({ title: "Do Office Work" });
+      const memoNote4 = new MemoNote({ title: "Sleep Early" });
+
+      savedUser = await newUser.save();
+      console.log(savedUser);
+      req.user = newUser;
       next();
     } else {
       req.status(401).json({ error: "User Already Exists" });
     }
   } catch (error) {
-    next(err);
+    next(error);
   }
 };
 

@@ -3,13 +3,8 @@ const Schema = mongoose.Schema;
 
 var memoNoteSchema = Schema({
   title: String,
-  points: [
-    {
-      type: String,
-    },
-  ],
-  date: Date,
+  date: { type: Date, default: Date.now },
 });
 
-var memoNote = mongoose.model("MemoNote", memoNoteSchema);
-module.exports(memoNote);
+var MemoNote = mongoose.model("MemoNote", memoNoteSchema);
+module.exports = MemoNote;
