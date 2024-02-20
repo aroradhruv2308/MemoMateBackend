@@ -1,11 +1,13 @@
 var jwt = require("jsonwebtoken");
-const { user } = require("../db/schema/user.js");
-const { MemoNote } = require("../db/schema/memo_note.js");
+const user = require("../db/schema/user.js");
 const authorizeUser = (req, res, next) => {
+  console.log(req);
   const { token } = req.headers;
+  console.log(token);
   if (token) {
     try {
       var decoded = jwt.verify(token, process.env.JWTSECRETKEY);
+      console.log(decoded);
       req.user = decoded;
       next();
     } catch (err) {
@@ -19,10 +21,13 @@ const authorizeUser = (req, res, next) => {
 const loginUser = async function (req, res, next) {
   try {
     const { username, password } = req.headers;
-    const doc = await user.findOne({ username: username }).exec();
+    const doc = await user.findOne({ username: username });
     if (doc) {
       if (doc.password == password) {
-        var token = jwt.sign({ foo: "bar" }, process.env.JWTSECRETKEY);
+        var token = jwt.sign(
+          { username: username, password: password },
+          process.env.JWTSECRETKEY
+        );
         req.token = token;
         next();
       } else {
@@ -39,17 +44,12 @@ const loginUser = async function (req, res, next) {
 const signUpUser = async function (req, res, next) {
   try {
     const { username, password } = req.headers;
-    const doc = await user.findOne({ username: "username" }).exec();
+    const doc = await user.findOne({ username: "username" });
     if (!doc) {
       const newUser = new user({
         username: username,
         password: password,
       });
-
-      const memoNote1 = new MemoNote({ title: "Go To Gym" });
-      const memoNote2 = new MemoNote({ title: "Crazy Study" });
-      const memoNote3 = new MemoNote({ title: "Do Office Work" });
-      const memoNote4 = new MemoNote({ title: "Sleep Early" });
 
       savedUser = await newUser.save();
       console.log(savedUser);
