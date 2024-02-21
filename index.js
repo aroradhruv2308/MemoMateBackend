@@ -4,6 +4,9 @@ var bodyParser = require("body-parser");
 const {
   fetchNotesMiddleware,
   createNewNote,
+  updateExistingNote,
+  addNewNote,
+  deleteExistingNote,
 } = require("./middlewares/fetch_notes_middleware.js");
 const {
   signUpUser,
@@ -17,6 +20,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -70,12 +74,12 @@ app.post("/createNote", authorizeUser, createNewNote, (req, res) => {
   }
 });
 
-app.put("/updateNote", authorizeUser, fetchNotesMiddleware, (req, res) => {
+app.put("/updateNote", authorizeUser, updateExistingNote, (req, res) => {
   if (req.user) {
     if (req.notes) {
       res.status(200).json({
         token: req.token,
-        message: "fetched notes successfully",
+        message: "updated notes successfully",
         notes: req.notes,
       });
     } else {
@@ -86,6 +90,37 @@ app.put("/updateNote", authorizeUser, fetchNotesMiddleware, (req, res) => {
   }
 });
 
+app.post("/addNote", authorizeUser, addNewNote, (req, res) => {
+  if (req.user) {
+    if (req.notes) {
+      res.status(200).json({
+        token: req.token,
+        message: "New note added successfully",
+        notes: req.notes,
+      });
+    } else {
+      res.status(401).send("Unable to fetch notes for this user");
+    }
+  } else {
+    res.status(401).send("Unauthorized Request");
+  }
+});
+
+app.delete("/deleteNote", authorizeUser, deleteExistingNote, (req, res) => {
+  if (req.user) {
+    if (req.notes) {
+      res.status(200).json({
+        token: req.token,
+        message: "Note deleted successfully",
+        notes: req.notes,
+      });
+    } else {
+      res.status(401).send("Unable to fetch notes for this user");
+    }
+  } else {
+    res.status(401).send("Unauthorized Request");
+  }
+});
 connectToDb().then(
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);

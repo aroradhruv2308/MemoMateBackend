@@ -1,13 +1,10 @@
 var jwt = require("jsonwebtoken");
 const user = require("../db/schema/user.js");
 const authorizeUser = (req, res, next) => {
-  console.log(req);
   const { token } = req.headers;
-  console.log(token);
   if (token) {
     try {
       var decoded = jwt.verify(token, process.env.JWTSECRETKEY);
-      console.log(decoded);
       req.user = decoded;
       next();
     } catch (err) {
@@ -52,7 +49,6 @@ const signUpUser = async function (req, res, next) {
       });
 
       savedUser = await newUser.save();
-      console.log(savedUser);
       req.user = newUser;
       next();
     } else {
